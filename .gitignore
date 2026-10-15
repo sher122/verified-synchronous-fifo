@@ -1,0 +1,5 @@
+@'
+*.vvp
+*.vcd
+*.fst
+'@ | Set-Content -Encoding utf8 .gitignore
