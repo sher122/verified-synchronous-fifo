@@ -12,12 +12,19 @@ module sync_fifo #(
     output logic                  full,
     output logic                  empty
 );
+         // Validate FIFO parameters at simulation time.
+    initial begin
+        if (DATA_WIDTH < 1)
+            $fatal(1, "DATA_WIDTH must be at least 1");
 
+        if (DEPTH < 1)
+            $fatal(1, "DEPTH must be at least 1");
+    end
     // Storage for DEPTH values, each DATA_WIDTH bits wide.
     logic [DATA_WIDTH-1:0] mem [0:DEPTH-1];
 
     // Pointer and counter widths.
-    localparam int PTR_WIDTH   = $clog2(DEPTH);
+    localparam int PTR_WIDTH = (DEPTH <= 1) ? 1 : $clog2(DEPTH);
     localparam int COUNT_WIDTH = $clog2(DEPTH + 1);
 
     // Next storage positions for writing and reading.
