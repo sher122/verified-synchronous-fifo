@@ -11,6 +11,7 @@ module tb_sync_fifo;
     logic [7:0] dout;
     logic full;
     logic empty;
+    integer tests_passed = 0;
 
     sync_fifo #(
         .DATA_WIDTH(8),
@@ -56,6 +57,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: expected 42, got %0d", dout);
 
         $display("PASS: single-value write/read");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         rd_en = 0;
@@ -97,6 +99,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: expected 30, got %0d", dout);
 
         $display("PASS: FIFO ordering (10, 20, 30)");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         rd_en = 0;
@@ -120,6 +123,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: output changed during empty read");
 
         $display("PASS: read request rejected when FIFO is empty");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         rd_en = 0;
@@ -195,6 +199,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: expected 44, got %0d", dout);
 
         $display("PASS: full FIFO rejects an extra write");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         rd_en = 0;
@@ -234,6 +239,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: FIFO status incorrect after simultaneous operation");
 
         $display("PASS: simultaneous read/write while partially filled");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         wr_en = 0;
@@ -287,6 +293,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: FIFO status incorrect after simultaneous operation");
 
         $display("PASS: full FIFO accepts read and rejects write");
+        tests_passed = tests_passed + 1;
 
         // Stop requests before finishing.
         @(negedge clk);
@@ -313,6 +320,7 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: dout should be zero after reset");
 
         $display("PASS: reset restores empty state");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         rst = 0;
@@ -404,13 +412,14 @@ module tb_sync_fifo;
             $fatal(1, "FAIL: expected 86, got %0d", dout);
 
         $display("PASS: FIFO pointer wraparound and ordering");
+        tests_passed = tests_passed + 1;
 
         @(negedge clk);
         rd_en = 0;
 
-        $display("ALL TESTS PASSED");
-        $finish;
-
+       $display("TOTAL PASS CHECKS: %0d", tests_passed);
+       $display("ALL TESTS PASSED");
+       $finish;   
     end
 
 endmodule
