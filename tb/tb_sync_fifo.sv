@@ -101,6 +101,104 @@ module tb_sync_fifo;
         @(negedge clk);
         rd_en = 0;
 
+                // Test 3: reading an empty FIFO must be rejected.
+        // The previous tests have consumed all stored values.
+        if (empty !== 1'b1)
+            $fatal(1, "FAIL: FIFO should be empty");
+
+        // Remember the previous output value.
+        @(negedge clk);
+        rd_en = 1;
+
+        @(posedge clk);
+        #1;
+
+        if (empty !== 1'b1)
+            $fatal(1, "FAIL: FIFO should remain empty");
+
+        if (dout !== 8'd30)
+            $fatal(1, "FAIL: output changed during empty read");
+
+        $display("PASS: read request rejected when FIFO is empty");
+
+        @(negedge clk);
+        rd_en = 0;
+
+                // Test 4: a write to a full FIFO must be rejected.
+        // Reset to begin this test with an empty FIFO.
+        @(negedge clk);
+        rst   = 1;
+        rd_en = 0;
+        wr_en = 0;
+
+        repeat (2) @(posedge clk);
+        @(negedge clk);
+        rst = 0;
+
+        // Fill all four FIFO slots.
+        din = 8'd11;
+        wr_en = 1;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd22;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd33;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd44;
+        @(posedge clk);
+
+        @(negedge clk);
+        wr_en = 0;
+
+        if (full !== 1'b1)
+            $fatal(1, "FAIL: FIFO should be full");
+
+        // Attempt to write a fifth value.
+        din   = 8'd55;
+        wr_en = 1;
+        @(posedge clk);
+        @(negedge clk);
+        wr_en = 0;
+
+        if (full !== 1'b1)
+            $fatal(1, "FAIL: FIFO should remain full");
+
+        // Read back the original four values.
+        rd_en = 1;
+
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd11)
+            $fatal(1, "FAIL: expected 11, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd22)
+            $fatal(1, "FAIL: expected 22, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd33)
+            $fatal(1, "FAIL: expected 33, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd44)
+            $fatal(1, "FAIL: expected 44, got %0d", dout);
+
+        $display("PASS: full FIFO rejects an extra write");
+
+        @(negedge clk);
+        rd_en = 0;
+
         $display("ALL TESTS PASSED");
         $finish;
     end
