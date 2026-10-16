@@ -239,8 +239,63 @@ module tb_sync_fifo;
         wr_en = 0;
         rd_en = 0;
 
+        
+        // Test 6: simultaneous read/write while FIFO is full.
+        @(negedge clk);
+        rst   = 1;
+        wr_en = 0;
+        rd_en = 0;
+
+        repeat (2) @(posedge clk);
+        @(negedge clk);
+        rst = 0;
+
+        // Fill all four slots.
+        din = 8'd71;
+        wr_en = 1;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd72;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd73;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd74;
+        @(posedge clk);
+
+        @(negedge clk);
+
+        if (full !== 1'b1)
+            $fatal(1, "FAIL: FIFO should be full before simultaneous operation");
+
+        // Request both operations while full.
+        din   = 8'd75;
+        wr_en = 1;
+        rd_en = 1;
+
+        @(posedge clk);
+        #1;
+
+        if (dout !== 8'd71)
+            $fatal(1, "FAIL: expected 71, got %0d", dout);
+
+        if (full !== 1'b0 || empty !== 1'b0)
+            $fatal(1, "FAIL: FIFO status incorrect after simultaneous operation");
+
+        $display("PASS: full FIFO accepts read and rejects write");
+
+        // Stop requests before finishing.
+        @(negedge clk);
+        wr_en = 0;
+        rd_en = 0;
+
         $display("ALL TESTS PASSED");
         $finish;
+
     end
 
 endmodule
