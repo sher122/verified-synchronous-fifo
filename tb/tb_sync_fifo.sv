@@ -32,11 +32,14 @@ module tb_sync_fifo;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("results/fifo_wave.vcd");
+        $dumpvars(0, tb_sync_fifo);
+
         rst   = 1;
         wr_en = 0;
         rd_en = 0;
         din   = 0;
-
+        
         // Reset the FIFO.
         repeat (2) @(posedge clk);
         @(negedge clk);
