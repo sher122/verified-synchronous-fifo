@@ -317,8 +317,100 @@ module tb_sync_fifo;
         @(negedge clk);
         rst = 0;
 
+        
+        // Test 8: write and read more than DEPTH values.
+        // This forces the pointers to wrap around the FIFO.
+
+        // Start from a known empty state.
+        @(negedge clk);
+        rst   = 1;
+        wr_en = 0;
+        rd_en = 0;
+
+        repeat (2) @(posedge clk);
+        @(negedge clk);
+        rst = 0;
+
+        // Write four values to fill the FIFO.
+        din = 8'd81;
+        wr_en = 1;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd82;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd83;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd84;
+        @(posedge clk);
+
+        // Read two values, freeing two slots.
+        @(negedge clk);
+        wr_en = 0;
+        rd_en = 1;
+
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd81)
+            $fatal(1, "FAIL: expected 81, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd82)
+            $fatal(1, "FAIL: expected 82, got %0d", dout);
+
+        // Write two more values; the write pointer wraps around.
+        @(negedge clk);
+        rd_en = 0;
+        wr_en = 1;
+        din = 8'd85;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd86;
+        @(posedge clk);
+
+        // Read the remaining four values in FIFO order.
+        @(negedge clk);
+        wr_en = 0;
+        rd_en = 1;
+
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd83)
+            $fatal(1, "FAIL: expected 83, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd84)
+            $fatal(1, "FAIL: expected 84, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd85)
+            $fatal(1, "FAIL: expected 85, got %0d", dout);
+
+        @(negedge clk);
+        @(posedge clk);
+        #1;
+        if (dout !== 8'd86)
+            $fatal(1, "FAIL: expected 86, got %0d", dout);
+
+        $display("PASS: FIFO pointer wraparound and ordering");
+
+        @(negedge clk);
+        rd_en = 0;
+
         $display("ALL TESTS PASSED");
         $finish;
+
     end
 
 endmodule
