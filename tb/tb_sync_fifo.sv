@@ -199,6 +199,46 @@ module tb_sync_fifo;
         @(negedge clk);
         rd_en = 0;
 
+                // Test 5: simultaneous read and write while partially filled.
+        @(negedge clk);
+        rst   = 1;
+        wr_en = 0;
+        rd_en = 0;
+
+        repeat (2) @(posedge clk);
+        @(negedge clk);
+        rst = 0;
+
+        // Write two values into the FIFO.
+        din   = 8'd61;
+        wr_en = 1;
+        @(posedge clk);
+
+        @(negedge clk);
+        din = 8'd62;
+        @(posedge clk);
+
+        // Request a read and a write on the same clock edge.
+        @(negedge clk);
+        din   = 8'd63;
+        wr_en = 1;
+        rd_en = 1;
+
+        @(posedge clk);
+        #1;
+
+        if (dout !== 8'd61)
+            $fatal(1, "FAIL: expected 61, got %0d", dout);
+
+        if (full !== 1'b0 || empty !== 1'b0)
+            $fatal(1, "FAIL: FIFO status incorrect after simultaneous operation");
+
+        $display("PASS: simultaneous read/write while partially filled");
+
+        @(negedge clk);
+        wr_en = 0;
+        rd_en = 0;
+
         $display("ALL TESTS PASSED");
         $finish;
     end
