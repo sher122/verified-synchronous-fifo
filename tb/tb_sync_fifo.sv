@@ -293,9 +293,32 @@ module tb_sync_fifo;
         wr_en = 0;
         rd_en = 0;
 
+               // Test 7: reset restores the FIFO to an empty state.
+        @(negedge clk);
+        rst   = 1;
+        wr_en = 0;
+        rd_en = 0;
+        din   = 0;
+
+        @(posedge clk);
+        #1;
+
+        if (empty !== 1'b1)
+            $fatal(1, "FAIL: FIFO should be empty after reset");
+
+        if (full !== 1'b0)
+            $fatal(1, "FAIL: FIFO should not be full after reset");
+
+        if (dout !== 8'd0)
+            $fatal(1, "FAIL: dout should be zero after reset");
+
+        $display("PASS: reset restores empty state");
+
+        @(negedge clk);
+        rst = 0;
+
         $display("ALL TESTS PASSED");
         $finish;
-
     end
 
 endmodule
