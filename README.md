@@ -7,6 +7,7 @@ A parameterized synchronous First-In, First-Out (FIFO) buffer implemented in Sys
 This project implements a synchronous FIFO that stores data in order and returns the oldest stored item first. The design uses separate read and write pointers, an occupancy counter, and full/empty status flags.
 
 The project demonstrates RTL design, simulation-based verification, boundary-condition testing, and waveform inspection.
+<img width="1164" height="253" alt="image" src="https://github.com/user-attachments/assets/cde65dcf-327b-4842-81c2-698e9dd9ac2a" />
 
 ## Design Specifications
 
